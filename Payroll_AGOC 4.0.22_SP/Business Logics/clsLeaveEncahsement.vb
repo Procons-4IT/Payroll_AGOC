@@ -336,6 +336,7 @@ Public Class clsLeaveEncashement
                     oGrid = aform.Items.Item("17").Specific
                     oGrid.Columns.Item("U_Z_GLACC").TitleObject.Caption = "Debit Account"
                     oGrid.Columns.Item("U_Z_GLACC1").TitleObject.Caption = "Credit Account"
+                    oGrid.Columns.Item("U_Z_ExtNo").TitleObject.Caption = "Batch No"
                     oGrid.Columns.Item("U_Z_GLACC").Editable = False
                     oGrid.Columns.Item("U_Z_GLACC1").Editable = False
                     oGrid.Columns.Item("U_Z_EmpId").TitleObject.Caption = "Employee No"
@@ -359,7 +360,9 @@ Public Class clsLeaveEncashement
                     'oGrid.Columns.Item("U_Z_NoofHours").TitleObject.Caption = "Number of Hours"
                     ' oGrid.Columns.Item("U_Z_Attachment").TitleObject.Caption = "Attachment"
                     oGrid.Columns.Item("U_Z_Year").TitleObject.Caption = "Year"
+                    oGrid.Columns.Item("U_Z_Year").Editable = True
                     oGrid.Columns.Item("U_Z_Month").TitleObject.Caption = "Month"
+                    oGrid.Columns.Item("U_Z_Month").Editable = True
                     oGrid.Columns.Item("U_Z_Notes").TitleObject.Caption = "Notes"
                     'oGrid.Columns.Item("U_Z_OffCycle").TitleObject.Caption = "Is OffCycle"
                     oGrid.Columns.Item("U_Z_CashOut").Type = SAPbouiCOM.BoGridColumnType.gct_CheckBox
@@ -382,6 +385,7 @@ Public Class clsLeaveEncashement
                     oGrid.Columns.Item("U_Z_GLACC1").TitleObject.Caption = "Credit Account"
                     oGrid.Columns.Item("U_Z_GLACC").Editable = False
                     oGrid.Columns.Item("U_Z_GLACC1").Editable = False
+                    oGrid.Columns.Item("U_Z_ExtNo").TitleObject.Caption = "Batch No"
                     oGrid.Columns.Item("Code").Visible = False
                     oGrid.Columns.Item("Name").Visible = False
                     oGrid.Columns.Item("U_Z_EmpId1").Visible = True
@@ -442,6 +446,11 @@ Public Class clsLeaveEncashement
                     oGrid.Columns.Item("U_Z_TrnsCode").Editable = False
                     oGrid.Columns.Item("U_Z_LeaveName").TitleObject.Caption = "Leave Name"
                     oGrid.Columns.Item("U_Z_LeaveName").Editable = False
+
+                    oGrid.Columns.Item("U_Z_Year").TitleObject.Caption = "Year"
+                    oGrid.Columns.Item("U_Z_Year").Editable = True
+                    oGrid.Columns.Item("U_Z_Month").TitleObject.Caption = "Month"
+                    oGrid.Columns.Item("U_Z_Month").Editable = True
                     'oGrid.Columns.Item("U_Z_TrnsCode").Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
                     'oComboColumn = oGrid.Columns.Item("U_Z_TrnsCode")
                     'Dim oTest As SAPbobsCOM.Recordset
@@ -485,6 +494,7 @@ Public Class clsLeaveEncashement
 
                     oGrid.Columns.Item("U_Z_LevBalance").TitleObject.Caption = "Leave Balance"
                     oGrid.Columns.Item("U_Z_LevBalance").Editable = False
+                    oGrid.Columns.Item("U_Z_StartDate").Editable = True
                     oGrid.AutoResizeColumns()
                     oGrid.SelectionMode = SAPbouiCOM.BoMatrixSelect.ms_Single
                     oApplication.Utilities.assignMatrixLineno(oGrid, aform)
@@ -1119,7 +1129,7 @@ Public Class clsLeaveEncashement
                 strEmpCondition = strEmpCondition & "  and  1=1 ) "
             End If
 
-            strQuery = "SELECT T0.[U_Z_EmpId],T0.[empID], T0.[firstName] + isnull( T0.[middleName],'') + isnull(T0.[lastName],'') 'Name',  T1.[U_Z_TrnsCode],T1.[U_Z_LeaveName], convert(varchar,T1.U_Z_Month) 'U_Z_Month',convert(varchar,T1.U_Z_Year) 'U_Z_Year', T1.[U_Z_LevBalance] , T1.U_Z_StartDate, T1.[U_Z_NoofDays],T1.[U_Z_CashOut],T1.[U_Z_Notes] ,T1.""U_Z_GLACC"",T1.""U_Z_GLACC1"" FROM OHEM T0 left outer Join  [dbo].[@Z_PAY_OLETRANS_OFF]  T1 on T1.U_Z_EMPID=T0.empID"
+            strQuery = "SELECT T0.[U_Z_EmpId],T0.[empID], T0.[firstName] + isnull( T0.[middleName],'') + isnull(T0.[lastName],'') 'Name',  T1.[U_Z_TrnsCode],T1.[U_Z_LeaveName], convert(varchar,T1.U_Z_Month) 'U_Z_Month',convert(varchar,T1.U_Z_Year) 'U_Z_Year', T1.[U_Z_LevBalance] , T1.U_Z_StartDate, T1.[U_Z_NoofDays],T1.[U_Z_CashOut],T1.[U_Z_Notes] ,T1.""U_Z_GLACC"",T1.""U_Z_GLACC1"",T0.[ExtEmpNo] 'U_Z_ExtNo' FROM OHEM T0 left outer Join  [dbo].[@Z_PAY_OLETRANS_OFF]  T1 on T1.U_Z_EMPID=T0.empID"
             strQuery = strQuery & " where 1=1 and  " & strEmpCondition & " and " & strDept & " and " & strPosition & " and " & strBranch & " and  U_Z_Year=" & CInt(strYear) & " and U_Z_Month=" & CInt(strMonth) & " and T0.""U_Z_CompNo""='" & strCompany & "'  order by T0.empID"
 
             oGrid = aForm.Items.Item("17").Specific
@@ -1215,7 +1225,7 @@ Public Class clsLeaveEncashement
                     Exit For
                 End If
             Next
-            strQuery = "SELECT T0.[Code], T0.[Name],T0.[U_Z_EmpId1], T0.[U_Z_EMPID],T0.""U_Z_EMPNAME"", T0.[U_Z_TrnsCode],T0.[U_Z_LeaveName], Convert(Varchar,T0.[U_Z_Month]) 'U_Z_Month', Convert(varchar,T0.[U_Z_Year]) 'U_Z_Year',T0.[U_Z_LevBalance] , T0.U_Z_StartDate, T0.[U_Z_NoofDays], T0.[U_Z_CashOut], T0.[U_Z_DailyRate],T0.[U_Z_Amount],T0.U_Z_StopProces,T0.U_Z_Notes,T0.""U_Z_Cutoff"",T0.""U_Z_Posted"",T0.""U_Z_GLACC"",T0.""U_Z_GLACC1"" FROM [dbo].[@Z_PAY_OLETRANS_OFF]  T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID"
+            strQuery = "SELECT T0.[Code], T0.[Name],T0.[U_Z_EmpId1], T0.[U_Z_EMPID],T0.""U_Z_EMPNAME"", T0.[U_Z_TrnsCode],T0.[U_Z_LeaveName], Convert(Varchar,T0.[U_Z_Month]) 'U_Z_Month', Convert(varchar,T0.[U_Z_Year]) 'U_Z_Year',T0.[U_Z_LevBalance] , T0.U_Z_StartDate, T0.[U_Z_NoofDays], T0.[U_Z_CashOut], T0.[U_Z_DailyRate],T0.[U_Z_Amount],T0.U_Z_StopProces,T0.U_Z_Notes,T0.""U_Z_Cutoff"",T0.""U_Z_Posted"",T0.""U_Z_GLACC"",T0.""U_Z_GLACC1"",T1.[ExtEmpNo] 'U_Z_ExtNo' FROM [dbo].[@Z_PAY_OLETRANS_OFF]  T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID"
             strQuery = strQuery & " where 1=1 and  " & strEmpCondition & " and  U_Z_MOnth=" & CInt(strmonth) & " and U_Z_Year=" & CInt(stryear) & " and T1.""U_Z_CompNo""='" & strCompany & "' "
             '   strQuery = strQuery & " where 1=2"
             'strQuery = "SElect * from [@Z_PAY_TRANS] where U_Z_EmpID='" & strEmp & "' and U_Z_MOnth=" & CInt(strmonth) & " and U_Z_Year=" & CInt(stryear)
@@ -1764,6 +1774,7 @@ Public Class clsLeaveEncashement
                                                     Val1 = oDataTable.GetValue("firstName", introw1) & " " & oDataTable.GetValue("middleName", introw1) & " " & oDataTable.GetValue("lastName", introw1)
                                                     Try
                                                         oGrid.DataTable.SetValue("U_Z_EMPNAME", pVal.Row, Val1)
+                                                        oGrid.DataTable.SetValue("U_Z_ExtNo", pVal.Row, oDataTable.GetValue("ExtEmpNo", 0))
                                                         oGrid.DataTable.SetValue("U_Z_EmpId1", pVal.Row, oDataTable.GetValue("U_Z_EmpID", introw1))
                                                         oGrid.DataTable.SetValue(pVal.ColUID, pVal.Row, val)
                                                     Catch ex As Exception
@@ -1774,6 +1785,7 @@ Public Class clsLeaveEncashement
                                                     Val1 = oDataTable.GetValue("firstName", 0) & " " & oDataTable.GetValue("middleName", introw1) & " " & oDataTable.GetValue("lastName", introw1)
                                                     Try
                                                         oGrid.DataTable.SetValue("U_Z_EMPNAME", oGrid.DataTable.Rows.Count - 1, Val1)
+                                                        oGrid.DataTable.SetValue("U_Z_ExtNo", pVal.Row, oDataTable.GetValue("ExtEmpNo", 0))
                                                         oGrid.DataTable.SetValue("U_Z_EmpId1", oGrid.DataTable.Rows.Count - 1, oDataTable.GetValue("U_Z_EmpID", introw1))
                                                         oGrid.DataTable.SetValue(pVal.ColUID, oGrid.DataTable.Rows.Count - 1, val)
                                                     Catch ex As Exception
@@ -1791,6 +1803,7 @@ Public Class clsLeaveEncashement
                                                     Try
                                                         oGrid.DataTable.SetValue("U_Z_EMPNAME", pVal.Row, Val1)
                                                         oGrid.DataTable.SetValue("U_Z_EMPID", pVal.Row, val)
+                                                        oGrid.DataTable.SetValue("U_Z_ExtNo", pVal.Row, oDataTable.GetValue("ExtEmpNo", 0))
                                                         oGrid.DataTable.SetValue("U_Z_EmpId1", pVal.Row, oDataTable.GetValue("U_Z_EmpID", 0))
                                                     Catch ex As Exception
                                                     End Try
@@ -1800,6 +1813,7 @@ Public Class clsLeaveEncashement
                                                     Val1 = oDataTable.GetValue("firstName", introw1) & " " & oDataTable.GetValue("middleName", introw1) & " " & oDataTable.GetValue("lastName", introw1)
                                                     Try
                                                         oGrid.DataTable.SetValue("U_Z_EMPNAME", oGrid.DataTable.Rows.Count - 1, Val1)
+                                                        oGrid.DataTable.SetValue("U_Z_ExtNo", pVal.Row, oDataTable.GetValue("ExtEmpNo", 0))
                                                         oGrid.DataTable.SetValue("U_Z_EMPID", oGrid.DataTable.Rows.Count - 1, val)
                                                         oGrid.DataTable.SetValue("U_Z_EmpId1", oGrid.DataTable.Rows.Count - 1, oDataTable.GetValue("U_Z_EmpID", introw1))
                                                     Catch ex As Exception

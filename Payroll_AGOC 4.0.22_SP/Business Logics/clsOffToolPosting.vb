@@ -178,6 +178,19 @@ Public Class clsoffToolPosting
             End If
 
 
+            If strFromEmp = "" Then
+                strEmpCondition = "1 =1"
+            Else
+                strEmpCondition = " T3.empID >=" & strFromEmp
+            End If
+
+            If strToEmp = "" Then
+                strEmpCondition = strEmpCondition & "  and 1 =1"
+            Else
+                strEmpCondition = strEmpCondition & "  and T3.empID <=" & strToEmp
+            End If
+
+
 
             oCombobox = aForm.Items.Item("7").Specific
             If oCombobox.Selected.Value = "" Then
@@ -246,12 +259,11 @@ Public Class clsoffToolPosting
                     strsql = strsql & " select T1.U_Z_Empid, 'L' 'Type',T0.Code,T0.Name,sum(T1.U_Z_Amount) 'Amount' , T0.U_Z_GLACC 'GL'   ,'D' 'Posting'  from [@Z_PAY_LEAVE]   T0 Left Outer Join [@Z_PAY_OLETRANS_OFF] T1 on T1.U_Z_TrnsCode =T0.Code   where  1=1  " & stCondition & "  group by T0.Code,T0.Name, T0.U_Z_GLACC,T1.U_Z_Empid"
                     strsql = strsql & " union all"
 
-                    'strsql = strsql & " select T1.U_Z_Empid, 'L' 'Type',T0.Code,T0.Name,sum(T1.U_Z_Amount) 'Amount' , T0.U_Z_GLACC1 'GL'   ,'C' 'Posting'  from [@Z_PAY_LEAVE]   T0 Left Outer Join [@Z_PAY_OLETRANS_OFF] T1 on T1.U_Z_TrnsCode =T0.Code   where 1=1  " & stCondition & "  group by T0.Code,T0.Name, T0.U_Z_GLACC1,T1.U_Z_Empid"
-                    'strsql = strsql & " union all"
-
-                    strsql = strsql & " select  T1.U_Z_Empid,T1.U_Z_Type 'Type',T0.Code,T0.Name,sum(T1.U_Z_Amount) 'Amount' , T0.U_Z_DED_GLACC 'GL'  ,'C' 'Posting'  from [@Z_PAY_ODED]    T0 Left Outer Join [@Z_PAY_TRANS] T1 on T1.U_Z_TrnsCode =T0.Code   where isnull(T1.U_Z_OffTool,'N')='Y' and  T1.U_Z_Type='D' " & stCondition & "  group by T0.Code,T0.Name,T1.U_Z_Type, T0.U_Z_DED_GLACC,T1.U_Z_Empid) X inner Join OHEM T3 on T3.empID=x.U_Z_EMPID  where " & strEmpCondition & "  group by "
+                    strsql = strsql & " select  T1.U_Z_Empid,T1.U_Z_Type 'Type',T0.Code,T0.Name,sum(T1.U_Z_Amount) 'Amount' , T0.U_Z_DED_GLACC 'GL'  ,'C' 'Posting'  from [@Z_PAY_ODED]    T0 Left Outer Join [@Z_PAY_TRANS] T1 on T1.U_Z_TrnsCode =T0.Code   where isnull(T1.U_Z_OffTool,'N')='Y' and  T1.U_Z_Type='D' " & stCondition & "  group by T0.Code,T0.Name,T1.U_Z_Type, T0.U_Z_DED_GLACC,T1.U_Z_Empid) X inner Join OHEM T3 on T3.empID=x.U_Z_EMPID  where  T3.""U_Z_CompNo""='" & strCompany & "' and  " & strEmpCondition & "  group by "
                     strsql = strsql & " X.U_Z_EMPID ,t3.firstName + ' ' + t3.lastName  ,x.Type,x.Code,x.Name,x.GL,x.Posting,t3.U_Z_Cost,T3.U_Z_Dept "
                     oGrid.DataTable.ExecuteQuery(strsql)
+
+
                     Formatgrid(oGrid, "Payroll")
                     oApplication.Utilities.assignMatrixLineno(oGrid, aForm)
                 End If
@@ -275,43 +287,55 @@ Public Class clsoffToolPosting
         Dim blnLineExists As Boolean = False
         Dim dblTotalCredit, dbltotalDebit As Double
         Try
-            Dim strEmpCondition, strEmpCondition1 As String
+            Dim strEmpCondition, strEmpCondition1, strEmp1Condition As String
             If strFromEmp = "" Then
                 strEmpCondition = "1 =1"
+                strEmp1Condition = " (1=1)"
             Else
-                strEmpCondition = " T0.U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition = " Convert(Numeric,T0.U_Z_EMPID) >='" & strFromEmp & "'"
+                strEmp1Condition = " empID >= " & strFromEmp
             End If
 
             If strToEmp = "" Then
                 strEmpCondition = strEmpCondition & "  and 1 =1"
+                strEmp1Condition = strEmp1Condition & " and (1=1)"
             Else
-                strEmpCondition = strEmpCondition & "  and T0.U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition = strEmpCondition & "  and Convert(Numeric,T0.U_Z_EMPID) <='" & strToEmp & "'"
+                strEmp1Condition = strEmp1Condition & " and empID <=" & strToEmp
             End If
 
             If strFromEmp = "" Then
                 strEmpCondition1 = "1 =1"
             Else
-                strEmpCondition1 = " T1.U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition1 = " Convert(Numeric,T1.U_Z_EMPID) >='" & strFromEmp & "'"
             End If
 
             If strToEmp = "" Then
                 strEmpCondition1 = strEmpCondition1 & "  and 1 =1"
             Else
-                strEmpCondition1 = strEmpCondition1 & "  and T1.U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition1 = strEmpCondition1 & "  and Convert(Numeric,T1.U_Z_EMPID) <='" & strToEmp & "'"
             End If
 
             Dim strEmpCondition2 As String
             If strFromEmp = "" Then
                 strEmpCondition2 = "1 =1"
             Else
-                strEmpCondition2 = " U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition2 = " Convert(numeric,U_Z_EMPID) >='" & strFromEmp & "'"
             End If
 
             If strToEmp = "" Then
                 strEmpCondition2 = strEmpCondition2 & "  and 1 =1"
             Else
-                strEmpCondition2 = strEmpCondition2 & "  and U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition2 = strEmpCondition2 & "  and Convert(numeric,U_Z_EMPID) <='" & strToEmp & "'"
             End If
+            Dim strEmp As String
+
+            'strEmp = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "')"
+            'strEmpCondition1 = "(" & strEmpCondition1 & ") and T1.U_Z_EMPID  in " & strEmp
+
+            'strEmpCondition2 = "(" & strEmpCondition2 & ") and U_Z_EMPID  in " & strEmp
+            strEmpCondition1 = " 1=1"
+            strEmpCondition2 = "1=1"
             oAccRs = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oPay = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oPay1 = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
@@ -336,15 +360,16 @@ Public Class clsoffToolPosting
                 Dim dblEmpCon, dblEmpPro, dblCmpCon, dblCmpPro As Double
                 '  stFields = " Sum(U_Z_ExSalAmt) 'ExtraSalary',Sum(U_Z_SAEMPCON) 'EmpCon',Sum(U_Z_SAEMPPRO) 'EmpPro',Sum(U_Z_SACMPCON) 'CmpCon',Sum(U_Z_SACMPPRO) 'CmpPro'"
                 ' strMainSQL = "Select isnull(U_Z_Branch,'') , isnull(U_Z_Dept,''),Sum(U_Z_MonthlyBasic) 'Basic',Sum(U_Z_EOS) 'U_Z_EOS',Sum(U_Z_AcrAirAmt) 'U_Z_AirAmt' , Sum(U_Z_AcrAmt) 'U_Z_AcrAmt',isnull(U_Z_Dim3,'') 'Dim3',isnull(U_Z_Dim4,'') 'Dim4',isnull(U_Z_Dim5,'') 'Dim5' , " & stFields & " from [@Z_PAYROLL1] where U_Z_OffCycle='N' and  U_Z_Posted='N' and U_Z_RefCode='" & strRefCode & "' group by  U_Z_Branch,U_Z_Dept,U_Z_Dim3,U_Z_Dim4,U_Z_Dim5"
-                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
-                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
+                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and  U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
 
                 oPay1.DoQuery(strMainSQL)
                 Dim strEmpName As String
                 Dim strEmpID1, strMonth, strYear As String
                 For intRow As Integer = 0 To oPay1.RecordCount - 1
+                    blnLineExists = False
                     strEmpID = oApplication.Utilities.getEmployeeRef(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode)
-                    strEmpID1 = oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
+                    strEmpID1 = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "' and (" & strEmp1Condition & "))" ' oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
                     strMonth = aMonth.ToString
                     strYear = aYear.ToString
                     'strEmpID = getEmployeeRef_Employee(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode, oPay1.Fields.Item("U_Z_EmpID").Value)
@@ -636,12 +661,7 @@ Public Class clsoffToolPosting
                             oPay4.DoQuery("Select max(BatchNum) from OBTF")
                             oDOC = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oJournalVouchers)
                             strNo = oPay4.Fields.Item(0).Value
-                            'oPay4.DoQuery("Update ""@Z_PAY_TRANS"" set ""U_Z_Posted""='Y' ,""U_Z_JVNo""='" & strNo & "' where ""U_Z_Posted""='N' and  ""U_Z_OffCycle""='N' and ""Code"" in (" & strEmpID & ")")
-                            'oPay4.DoQuery("Update ""@Z_PAY_OLETRANS"" set ""U_Z_Posted""='Y'  where ""U_Z_Posted""='N' and  ""U_Z_OffCycle""='N' and ""U_Z_EMPID""='" & strEmpID1 & "' and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
-                            'oPay4.DoQuery("Update ""@Z_PAY_TKTTRANS"" set ""U_Z_Posted""='Y'  where ""U_Z_Posted""='N' and  ""U_Z_EMPID""='" & strEmpID1 & "' and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
-                            'oPay4.DoQuery("Update ""@Z_PAY_TRANS"" set ""U_Z_Posted""='Y'  where ""U_Z_Posted""='N' and  ""U_Z_EMPID""='" & strEmpID1 & "' and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
-                            ' oPay4.DoQuery("Update ""@Z_PAY_OLETRANS"" set ""U_Z_Posted""='Y'  where ""U_Z_Posted""='N' and  ""U_Z_OffCycle""='N' and ""U_Z_EMPID"" in (" & strEmpID1 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
-                            ' oPay4.DoQuery("Update ""@Z_PAY_TKTTRANS"" set ""U_Z_Posted""='Y'  where ""U_Z_Posted""='N' and  ""U_Z_EMPID"" in (" & strEmpID1 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
+                            Dim s As String = "Select * from  ""@Z_PAY_TRANS""   where  isnull(""U_Z_OffTool"",'N')='Y' and  ""U_Z_Posted""='N' and  ""U_Z_EMPID"" in (" & strEmpID1 & ") and  (" & strEmpCondition2 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear
                             oPay4.DoQuery("Update ""@Z_PAY_TRANS"" set ""U_Z_Posted""='Y',""U_Z_JVNo""='" & strNo & "'  where  isnull(""U_Z_OffTool"",'N')='Y' and  ""U_Z_Posted""='N' and  ""U_Z_EMPID"" in (" & strEmpID1 & ") and  (" & strEmpCondition2 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
                             oPay4.DoQuery("Update ""@Z_PAY_OLETRANS_OFF"" set ""U_Z_Posted""='Y',""U_Z_JVNo""='" & strNo & "'  where    ""U_Z_Posted""='N' and  ""U_Z_EMPID"" in (" & strEmpID1 & ") and  (" & strEmpCondition2 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
                             oPay4.DoQuery("Select * from  ""@Z_PAY_OLETRANS_OFF""  where    ""U_Z_Posted""='Y' and  ""U_Z_JVNo""='" & strNo & "' and ""U_Z_EMPID"" in (" & strEmpID1 & ") and  (" & strEmpCondition2 & ") and ""U_Z_Month""=" & aMonth & " and ""U_Z_Year""=" & aYear)
@@ -650,7 +670,7 @@ Public Class clsoffToolPosting
                                 oPay4.MoveNext()
                             Next
                         End If
-                     
+
                     End If
                     oPay1.MoveNext()
                 Next
@@ -685,43 +705,55 @@ Public Class clsoffToolPosting
         Dim dblTotalCredit, dbltotalDebit As Double
         Try
 
-            Dim strEmpCondition, strEmpCondition1 As String
+            Dim strEmpCondition, strEmpCondition1, strEmp1Condition As String
             If strFromEmp = "" Then
                 strEmpCondition = "1 =1"
+                strEmp1Condition = " (1=1)"
             Else
-                strEmpCondition = " T0.U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition = " Convert(Numeric,T0.U_Z_EMPID) >='" & strFromEmp & "'"
+                strEmp1Condition = " empID >= " & strFromEmp
             End If
 
             If strToEmp = "" Then
                 strEmpCondition = strEmpCondition & "  and 1 =1"
+                strEmp1Condition = strEmp1Condition & " and (1=1)"
             Else
-                strEmpCondition = strEmpCondition & "  and T0.U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition = strEmpCondition & "  and Convert(Numeric,T0.U_Z_EMPID) <='" & strToEmp & "'"
+                strEmp1Condition = strEmp1Condition & " and empID <=" & strToEmp
             End If
 
             If strFromEmp = "" Then
                 strEmpCondition1 = "1 =1"
             Else
-                strEmpCondition1 = " T1.U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition1 = " Convert(Numeric,T1.U_Z_EMPID) >='" & strFromEmp & "'"
             End If
 
             If strToEmp = "" Then
                 strEmpCondition1 = strEmpCondition1 & "  and 1 =1"
             Else
-                strEmpCondition1 = strEmpCondition1 & "  and T1.U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition1 = strEmpCondition1 & "  and Convert(Numeric,T1.U_Z_EMPID) <='" & strToEmp & "'"
             End If
 
             Dim strEmpCondition2 As String
             If strFromEmp = "" Then
                 strEmpCondition2 = "1 =1"
             Else
-                strEmpCondition2 = " U_Z_EMPID >='" & strFromEmp & "'"
+                strEmpCondition2 = " Convert(numeric,U_Z_EMPID) >='" & strFromEmp & "'"
             End If
 
             If strToEmp = "" Then
                 strEmpCondition2 = strEmpCondition2 & "  and 1 =1"
             Else
-                strEmpCondition2 = strEmpCondition2 & "  and U_Z_EMPID <='" & strToEmp & "'"
+                strEmpCondition2 = strEmpCondition2 & "  and Convert(numeric,U_Z_EMPID) <='" & strToEmp & "'"
             End If
+            Dim strEmp As String
+
+            'strEmp = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "')"
+            'strEmpCondition1 = "(" & strEmpCondition1 & ") and T1.U_Z_EMPID  in " & strEmp
+            'strEmpCondition2 = "(" & strEmpCondition2 & ") and U_Z_EMPID  in " & strEmp
+            strEmpCondition1 = " 1=1"
+            strEmpCondition2 = "1=1"
+         
 
             oAccRs = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oPay = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
@@ -751,15 +783,17 @@ Public Class clsoffToolPosting
 
 
 
-                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
-                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
+                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where T1.U_Z_CompNo='" & aCompany & "' and  U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
 
                 oPay1.DoQuery(strMainSQL)
                 Dim strEmpName As String
                 Dim strEmpID1, strMonth, strYear As String
                 For intRow As Integer = 0 To oPay1.RecordCount - 1
+                    blnLineExists = False
                     strEmpID = oApplication.Utilities.getEmployeeRef(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode)
-                    strEmpID1 = oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
+                    '  strEmpID1 = oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
+                    strEmpID1 = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "' and (" & strEmp1Condition & "))"
                     strMonth = aMonth.ToString
                     strYear = aYear.ToString
                     'strEmpID = getEmployeeRef_Employee(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode, oPay1.Fields.Item("U_Z_EmpID").Value)
@@ -1132,6 +1166,12 @@ Public Class clsoffToolPosting
             Else
                 strEmpCondition2 = strEmpCondition2 & "  and U_Z_EMPID <='" & strToEmp & "'"
             End If
+            Dim strEmp As String
+
+            strEmp = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "')"
+            strEmpCondition1 = "(" & strEmpCondition1 & ") and T1.U_Z_EMPID  in " & strEmp
+
+            strEmpCondition2 = "(" & strEmpCondition2 & ") and U_Z_EMPID  in " & strEmp
 
             oAccRs = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oPay = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
@@ -1157,16 +1197,17 @@ Public Class clsoffToolPosting
                 Dim dblEmpCon, dblEmpPro, dblCmpCon, dblCmpPro As Double
                 '  stFields = " Sum(U_Z_ExSalAmt) 'ExtraSalary',Sum(U_Z_SAEMPCON) 'EmpCon',Sum(U_Z_SAEMPPRO) 'EmpPro',Sum(U_Z_SACMPCON) 'CmpCon',Sum(U_Z_SACMPPRO) 'CmpPro'"
                 ' strMainSQL = "Select isnull(U_Z_Branch,'') , isnull(U_Z_Dept,''),Sum(U_Z_MonthlyBasic) 'Basic',Sum(U_Z_EOS) 'U_Z_EOS',Sum(U_Z_AcrAirAmt) 'U_Z_AirAmt' , Sum(U_Z_AcrAmt) 'U_Z_AcrAmt',isnull(U_Z_Dim3,'') 'Dim3',isnull(U_Z_Dim4,'') 'Dim4',isnull(U_Z_Dim5,'') 'Dim5' , " & stFields & " from [@Z_PAYROLL1] where U_Z_OffCycle='N' and  U_Z_Posted='N' and U_Z_RefCode='" & strRefCode & "' group by  U_Z_Branch,U_Z_Dept,U_Z_Dim3,U_Z_Dim4,U_Z_Dim5"
-                strMainSQL = "    select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ")  group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = "    select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ")  group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
 
-                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,X.empID,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
-                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.empID, T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.empID, x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
+                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,X.empID,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and  U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.empID, T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.empID, x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
 
 
                 oPay1.DoQuery(strMainSQL)
                 Dim strEmpName As String
                 Dim strEmpID1, strMonth, strYear As String
                 For intRow As Integer = 0 To oPay1.RecordCount - 1
+                    blnLineExists = False
                     strEmpID = oPay1.Fields.Item("empID").Value ' oApplication.Utilities.getEmployeeRef(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode)
                     strEmpID1 = oPay1.Fields.Item("empID").Value ' oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
                     strMonth = aMonth.ToString
@@ -1557,6 +1598,13 @@ Public Class clsoffToolPosting
                 strEmpCondition2 = strEmpCondition2 & "  and U_Z_EMPID <='" & strToEmp & "'"
             End If
 
+            Dim strEmp As String
+
+            strEmp = "(Select empID from OHEM where U_Z_CompNo='" & aCompany & "')"
+            strEmpCondition1 = "(" & strEmpCondition1 & ") and T1.U_Z_EMPID  in " & strEmp
+
+            strEmpCondition2 = "(" & strEmpCondition2 & ") and U_Z_EMPID  in " & strEmp
+
 
             oAccRs = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oPay = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
@@ -1582,15 +1630,16 @@ Public Class clsoffToolPosting
                 Dim dblEmpCon, dblEmpPro, dblCmpCon, dblCmpPro As Double
                 '  stFields = " Sum(U_Z_ExSalAmt) 'ExtraSalary',Sum(U_Z_SAEMPCON) 'EmpCon',Sum(U_Z_SAEMPPRO) 'EmpPro',Sum(U_Z_SACMPCON) 'CmpCon',Sum(U_Z_SACMPPRO) 'CmpPro'"
                 ' strMainSQL = "Select isnull(U_Z_Branch,'') , isnull(U_Z_Dept,''),Sum(U_Z_MonthlyBasic) 'Basic',Sum(U_Z_EOS) 'U_Z_EOS',Sum(U_Z_AcrAirAmt) 'U_Z_AirAmt' , Sum(U_Z_AcrAmt) 'U_Z_AcrAmt',isnull(U_Z_Dim3,'') 'Dim3',isnull(U_Z_Dim4,'') 'Dim4',isnull(U_Z_Dim5,'') 'Dim5' , " & stFields & " from [@Z_PAYROLL1] where U_Z_OffCycle='N' and  U_Z_Posted='N' and U_Z_RefCode='" & strRefCode & "' group by  U_Z_Branch,U_Z_Dept,U_Z_Dim3,U_Z_Dim4,U_Z_Dim5"
-                strMainSQL = "    select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = "    select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
 
-                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,X.empID,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
-                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.empID, T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.empID, x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
+                strMainSQL = "  select x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5,X.empID,count(*) 'Count' from (   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*) 'Count' from  [@Z_PAY_TRANS] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and U_Z_Posted='N' and U_Z_offTool='Y' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by T1.empID,  T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'')"
+                strMainSQL = strMainSQL & "  union All   select T1.U_Z_Cost,T1.U_Z_Dept,isnull(T1.U_Z_Dim3,'') 'Dim3' ,isnull(T1.U_Z_Dim4,'') 'Dim4',isnull(T1.U_Z_Dim5,'') 'Dim5',T1.empID,COUNT(*)  'Count' from  [@Z_PAY_OLETRANS_OFF] T0 inner Join OHEM T1 on T1.empID=T0.U_Z_EMPID  where  T1.U_Z_CompNo='" & aCompany & "' and  U_Z_Posted='N' and T0.U_Z_Month=" & aMonth & " and T0.U_Z_Year=" & aYear & " and (" & strEmpCondition & ") group by  T1.empID, T1.U_Z_Cost,T1.U_Z_Dept,T1.U_Z_Branch,isnull(T1.U_Z_Dim3,'')  ,isnull(T1.U_Z_Dim4,'') ,isnull(T1.U_Z_Dim5,'') ) X group by x.empID, x.U_Z_Cost,x.U_Z_Dept,x.Dim3,X.Dim4,x.Dim5"
 
                 oPay1.DoQuery(strMainSQL)
                 Dim strEmpName As String
                 Dim strEmpID1, strMonth, strYear As String
                 For intRow As Integer = 0 To oPay1.RecordCount - 1
+                    blnLineExists = False
                     strEmpID = oPay1.Fields.Item("empID").Value '  oApplication.Utilities.getEmployeeRef(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value, strRefCode)
                     strEmpID1 = oPay1.Fields.Item("empID").Value 'oApplication.Utilities.getEmpIDFromMaster(oPay1.Fields.Item(0).Value, oPay1.Fields.Item(1).Value) 'oPay1.Fields.Item("U_Z_EmpID").Value
                     strMonth = aMonth.ToString

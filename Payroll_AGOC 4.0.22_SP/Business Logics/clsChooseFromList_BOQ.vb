@@ -289,7 +289,12 @@ Public Class clsChooseFromList_BOQ
                                     If CFLChoice = "E" Or CFLChoice = "D" Then
                                         objGrid.DataTable.SetValue("U_Z_Amount", sourcerowId, strSelectedItem2)
                                         If oForm.TypeEx = frm_OffToolTransaction Then
-                                            objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                            Try
+                                                objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                            Catch ex As Exception
+
+                                            End Try
+
                                         End If
                                         If oForm.TypeEx = frm_PayTrans Then
                                             Dim oobj As New clsPayrollTransaction
@@ -365,7 +370,13 @@ Public Class clsChooseFromList_BOQ
                                     If CFLChoice = "E" Or CFLChoice = "D" Then
                                         objGrid.DataTable.SetValue("U_Z_Amount", sourcerowId, strSelectedItem2)
                                         If oForm.TypeEx = frm_OffToolTransaction Then
-                                            objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                            'objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                            Try
+                                                objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                            Catch ex As Exception
+
+                                            End Try
+
                                         End If
 
                                         If oForm.TypeEx = frm_PayTrans Then
@@ -434,7 +445,13 @@ Public Class clsChooseFromList_BOQ
                             If CFLChoice = "E" Or CFLChoice = "D" Then
                                 objGrid.DataTable.SetValue("U_Z_Amount", sourcerowId, strSelectedItem2)
                                 If oForm.TypeEx = frm_OffToolTransaction Then
-                                    objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                    ' objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                    Try
+                                        objGrid.DataTable.SetValue("U_Z_AffDedu", sourcerowId, strSelectedItem3)
+                                    Catch ex As Exception
+
+                                    End Try
+
                                 End If
                                 If oForm.TypeEx = frm_PayTrans Then
                                     Dim oobj As New clsPayrollTransaction
